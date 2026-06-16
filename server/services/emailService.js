@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 
-export const sendResetPasswordEmail = async (email, resetUrl) => {
 const isSmtpConfigured = () => (
   Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS)
 );
@@ -18,7 +17,7 @@ const createTransporter = () => {
 };
 
 const buildResetEmail = (to, resetUrl) => ({
-  from: process.env.SMTP_FROM || `"GameVault" <no-reply@gamevault.com>`,
+  from: process.env.SMTP_FROM || `"GameVault" <no-reply@gamevault.com>` ,
   to,
   subject: 'GameVault - Password Reset Request',
   text: `You requested a password reset. Visit the link to set a new password: ${resetUrl}`,
@@ -64,7 +63,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
 export const sendTestEmail = async (to) => {
   try {
     const mailOptions = {
-      from: process.env.SMTP_FROM || `"GameVault" <no-reply@gamevault.com>`,
+      from: process.env.SMTP_FROM || `"GameVault" <no-reply@gamevault.com>` ,
       to,
       subject: 'GameVault - SMTP Test',
       text: 'This is a test email to verify SMTP configuration for GameVault.',
@@ -84,5 +83,4 @@ export const sendTestEmail = async (to) => {
     console.error('Failed to send test email:', err);
     throw err;
   }
-};
 };
