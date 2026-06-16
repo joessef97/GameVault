@@ -66,7 +66,19 @@ const ResetPassword = () => {
             <p className="text-gray-400 mt-1">Enter your new password below</p>
           </div>
 
-          {resetCompleted ? (
+          {!token ? (
+            <div className="text-center space-y-6">
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                This reset link is invalid or missing. Please request a new password reset link.
+              </div>
+              <Link
+                to="/forgot-password"
+                className="btn-primary w-full justify-center text-sm py-2.5"
+              >
+                Request New Link
+              </Link>
+            </div>
+          ) : resetCompleted ? (
             <div className="text-center space-y-6">
               <div className="flex justify-center text-gaming-green">
                 <CheckCircle className="w-16 h-16 animate-bounce" />

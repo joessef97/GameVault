@@ -114,12 +114,22 @@ export const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    // Delegate URL construction and sending to the email service
-    await sendPasswordResetEmail(user.email, resetToken);
+    try {
+      await sendPasswordResetEmail(user.email, resetToken);
+    } catch (emailError) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save();
+      console.error('Password reset email could not be sent:', emailError.message);
+      return res.status(500).json({
+        message: 'Unable to send password reset email. Please try again later.'
+      });
+    }
 
     res.json({ message: 'If that email address exists, we have sent a reset link.' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Something went wrong. Please try again later.' });
   }
 };
 
@@ -128,10 +138,7 @@ export const testSmtp = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required' });
 
-    const result = await sendTestEmail(email);
-    if (result && result.debug) {
-      return res.json({ message: 'SMTP not configured; debug mode.', debug: true });
-    }
+    await sendTestEmail(email);
     res.json({ message: 'Test email sent' });
   } catch (error) {
     console.error('SMTP test failed:', error);
