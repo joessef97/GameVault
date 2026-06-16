@@ -2,7 +2,7 @@ import { validationResult } from 'express-validator';
 import crypto from 'crypto';
 import User from '../models/User.js';
 import { generateToken } from '../utils/generateToken.js';
-import { sendResetPasswordEmail } from '../services/emailService.js';
+import { sendPasswordResetEmail, sendTestEmail } from '../services/emailService.js';
 
 
 export const register = async (req, res) => {
@@ -114,14 +114,28 @@ export const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const origin = req.headers.origin || process.env.CLIENT_URL || 'http://localhost:5173';
-    const resetUrl = `${origin}/reset-password/${resetToken}`;
-
-    await sendResetPasswordEmail(user.email, resetUrl);
+    // Delegate URL construction and sending to the email service
+    await sendPasswordResetEmail(user.email, resetToken);
 
     res.json({ message: 'If that email address exists, we have sent a reset link.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const testSmtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const result = await sendTestEmail(email);
+    if (result && result.debug) {
+      return res.json({ message: 'SMTP not configured; debug mode.', debug: true });
+    }
+    res.json({ message: 'Test email sent' });
+  } catch (error) {
+    console.error('SMTP test failed:', error);
+    res.status(500).json({ message: 'Failed to send test email', error: error.message });
   }
 };
 
