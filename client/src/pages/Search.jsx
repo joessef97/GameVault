@@ -66,8 +66,12 @@ const SearchPage = () => {
     }
   }, [filters]);
 
-  const updateFilter = (key, value) => {
-    const newFilters = { ...filters, [key]: value, page: 1 };
+  const updateFilter = (key, value, resetPage = key !== 'page') => {
+    const newFilters = {
+      ...filters,
+      [key]: value,
+      page: resetPage ? 1 : value
+    };
     setFilters(newFilters);
 
     const params = new URLSearchParams();
@@ -218,7 +222,7 @@ const SearchPage = () => {
             <Pagination
               currentPage={filters.page}
               totalPages={Math.min(totalPages, 50)}
-              onPageChange={(page) => updateFilter('page', page)}
+              onPageChange={(page) => updateFilter('page', page, false)}
             />
           </>
         ) : (
