@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { Lock, ArrowLeft, Gamepad2, CheckCircle } from 'lucide-react';
 import { resetPassword } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const ResetPassword = () => {
-  const { token } = useParams();
+  const { token: paramToken } = useParams();
+  const location = useLocation();
+  const queryToken = new URLSearchParams(location.search).get('token');
+  const token = paramToken || queryToken;
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
