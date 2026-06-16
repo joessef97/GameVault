@@ -1,6 +1,9 @@
 import { validationResult } from 'express-validator';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import { generateToken } from '../utils/generateToken.js';
+import { sendResetPasswordEmail } from '../services/emailService.js';
+
 
 export const register = async (req, res) => {
   try {
@@ -89,3 +92,69 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // For security, return success even if user doesn't exist
+      return res.json({ message: 'If that email address exists, we have sent a reset link.' });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    await user.save();
+
+    const origin = req.headers.origin || process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${origin}/reset-password/${resetToken}`;
+
+    await sendResetPasswordEmail(user.email, resetUrl);
+
+    res.json({ message: 'If that email address exists, we have sent a reset link.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { password } = req.body;
+    const { token } = req.params;
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now login.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

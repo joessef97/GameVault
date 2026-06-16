@@ -40,7 +40,13 @@ const userSchema = new mongoose.Schema({
   favoriteGames: [{
     type: Number,
     ref: 'Game'
-  }]
+  }],
+  resetPasswordToken: {
+    type: String
+  },
+  resetPasswordExpires: {
+    type: Date
+  }
 }, {
   timestamps: true
 });
