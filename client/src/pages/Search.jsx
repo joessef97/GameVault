@@ -20,6 +20,8 @@ const SearchPage = () => {
     genre: searchParams.get('genre') || '',
     platform: searchParams.get('platform') || '',
     ordering: searchParams.get('ordering') || '-relevance',
+    metacritic: searchParams.get('metacritic') || '',
+    dates: searchParams.get('dates') || '',
     page: parseInt(searchParams.get('page')) || 1
   });
 
@@ -53,6 +55,8 @@ const SearchPage = () => {
         ...(filters.q && { search: filters.q }),
         ...(filters.genre && { genres: filters.genre }),
         ...(filters.platform && { platforms: filters.platform }),
+        ...(filters.metacritic && { metacritic: filters.metacritic }),
+        ...(filters.dates && { dates: filters.dates }),
         ordering: filters.ordering
       };
 
@@ -82,11 +86,11 @@ const SearchPage = () => {
   };
 
   const clearFilters = () => {
-    setFilters({ q: '', genre: '', platform: '', ordering: '-relevance', page: 1 });
+    setFilters({ q: '', genre: '', platform: '', ordering: '-relevance', metacritic: '', dates: '', page: 1 });
     setSearchParams({});
   };
 
-  const hasActiveFilters = filters.genre || filters.platform || filters.q;
+  const hasActiveFilters = filters.genre || filters.platform || filters.q || filters.metacritic || filters.dates;
 
   return (
     <div className="pt-20 px-4 sm:px-6 lg:px-8 animate-fade-in">

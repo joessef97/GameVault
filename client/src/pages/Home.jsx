@@ -11,6 +11,8 @@ const Home = () => {
   const [topRated, setTopRated] = useState([]);
   const [upcoming, setUpcoming] = useState([]);
   const [loading, setLoading] = useState(true);
+  const upcomingStartDate = new Date().toISOString().split('T')[0];
+  const upcomingEndDate = new Date(Date.now() + 180 * 86400000).toISOString().split('T')[0];
 
   useEffect(() => {
     fetchGames();
@@ -24,7 +26,7 @@ const Home = () => {
         getGames({ ordering: '-rating', page_size: 8, metacritic: '80,100' }),
         getGames({
           ordering: '-released',
-          dates: `${new Date().toISOString().split('T')[0]},${new Date(Date.now() + 180 * 86400000).toISOString().split('T')[0]}`,
+          dates: `${upcomingStartDate},${upcomingEndDate}`,
           page_size: 8
         })
       ]);
@@ -39,7 +41,7 @@ const Home = () => {
     }
   };
 
-  const SectionHeader = ({ icon: Icon, title, subtitle }) => (
+  const SectionHeader = ({ icon: Icon, title, subtitle, href = '/search' }) => (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-3">
         <div className="p-2 bg-accent-primary/20 rounded-lg">
@@ -50,7 +52,7 @@ const Home = () => {
           {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
         </div>
       </div>
-      <Link to="/search" className="flex items-center gap-1 text-accent-primary hover:text-accent-secondary text-sm font-medium transition-colors">
+      <Link to={href} className="flex items-center gap-1 text-accent-primary hover:text-accent-secondary text-sm font-medium transition-colors">
         View All
         <ChevronRight className="w-4 h-4" />
       </Link>
@@ -109,6 +111,7 @@ const Home = () => {
             icon={Flame}
             title="Trending Now"
             subtitle="Most popular games this week"
+            href="/search?ordering=-relevance"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {trendingGames.map(game => (
@@ -125,6 +128,7 @@ const Home = () => {
             icon={Award}
             title="Top Rated"
             subtitle="Highest rated games of all time"
+            href="/search?ordering=-rating&metacritic=80%2C100"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {topRated.map(game => (
@@ -141,6 +145,7 @@ const Home = () => {
             icon={Clock}
             title="Coming Soon"
             subtitle="Upcoming releases to watch"
+            href={`/search?ordering=-released&dates=${encodeURIComponent(`${upcomingStartDate},${upcomingEndDate}`)}`}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {upcoming.map(game => (
